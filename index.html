@@ -1,0 +1,74 @@
+<html>
+<head>
+<script src="http://192.168.1.13/socket.io/socket.io.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+<title>Chat Test</title>
+
+<style>
+.user_list {
+    width: 250px;
+    height: 80%;
+    float: right;
+}
+
+.chat {
+    float: left;
+    width: 900px;
+    height: 70%;
+}
+
+.text_entry {
+    width: 900px;
+}
+</style>
+
+</head>
+<body>
+    <h1>Hello, <span class="user_name">USER</span></h1>
+    <select class="user_list" multiple="multiple"></select>
+    <textarea class="chat"></textarea>
+    <input type="text" class="text_entry"></input>
+
+<script>
+    $(document).ready(function(){
+    var socket = io.connect('http://192.168.1.13');
+    var my_name;
+    socket.on('connection', function (data) {
+        console.log(data);
+        my_name = data.name;
+
+        $(".user_name").text(my_name);
+        socket.emit('send_message', {message: "acabou de entrar"});
+    });
+
+    socket.on('user_list', function(data) {
+        console.log(data);
+        user_list = data.users;
+
+        updateUserList();
+    });
+
+    socket.on('new_message', function(data) {
+        $(".chat").text( $(".chat").text() + "\n" + data.message); 
+    });
+
+    $(".text_entry").keydown(function(e){
+        if(e.keyCode == 13){
+            socket.emit("send_message", {message: $(".text_entry").val()});
+            $(this).val("");
+        }
+    });
+});
+
+function updateUserList(){
+    list = $(".user_list");
+    list.empty();
+    for(i = 0; i < user_list.length; i++){
+          list.append("<option>"+user_list[i]+"</option> ");
+     }
+}
+</script>
+</body>
+
+</html>
